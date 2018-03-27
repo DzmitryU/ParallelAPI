@@ -1,15 +1,23 @@
+const makeJobs = (jobs, parallelJobsNumber) => {
+
+};
+
 class Parallel {
+
     parallelJobsNumber = Number.MAX_SAFE_INTEGER;
+    jobs = [];
+
     constructor({ parallelJobs }) {
         this.parallelJobsNumber = parallelJobs;
     };
 
     job(callback) {
-        callback();
+        this.jobs.push(callback);
         return this
     };
 
     done(callback) {
-        callback();
+        makeJobs(this.jobs, this.parallelJobsNumber)
+            .then(callback);
     }
 }
