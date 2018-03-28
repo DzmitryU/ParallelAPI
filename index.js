@@ -1,26 +1,20 @@
-const splitArray = (array, chunkSize) => {
-    const chunks = [];
+class Parallel {
 
-    for (let i = 0; i < array.length; i += chunkSize) {
-        chunks.push(array.slice(i, i + chunkSize))
+    constructor({parallelJobs}) {
+        this.jobs = [];
+        this.parallelJobsNumber = parallelJobs;
+    };
+
+    job(callback) {
+        this.jobs.push(callback);
+        return this
+    };
+
+    done(callback) {
+        makeJobs(this.jobs, this.parallelJobsNumber)
+            .then(callback);
     }
-
-    return chunks;
-};
-
-const promisifyJobs = (jobs) => {
-    const promisifiedJobs = [];
-
-    jobs.forEach((job) => {
-        promisifiedJobs.push(
-            new Promise((resolve) => {
-                job(resolve);
-            })
-        )
-    });
-
-    return promisifiedJobs;
-};
+}
 
 const makeJobs = (jobs, parallelJobsNumber) => {
     return new Promise(resolve => {
@@ -47,23 +41,29 @@ const makeJobs = (jobs, parallelJobsNumber) => {
     });
 };
 
-class Parallel {
+const splitArray = (array, chunkSize) => {
+    const chunks = [];
 
-    constructor({parallelJobs}) {
-        this.jobs = [];
-        this.parallelJobsNumber = parallelJobs;
-    };
-
-    job(callback) {
-        this.jobs.push(callback);
-        return this
-    };
-
-    done(callback) {
-        makeJobs(this.jobs, this.parallelJobsNumber)
-            .then(callback);
+    for (let i = 0; i < array.length; i += chunkSize) {
+        chunks.push(array.slice(i, i + chunkSize))
     }
-}
+
+    return chunks;
+};
+
+const promisifyJobs = (jobs) => {
+    const promisifiedJobs = [];
+
+    jobs.forEach((job) => {
+        promisifiedJobs.push(
+            new Promise((resolve) => {
+                job(resolve);
+            })
+        )
+    });
+
+    return promisifiedJobs;
+};
 
 /************************************************
  * Please don`t change the code bellow this line *
