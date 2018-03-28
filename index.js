@@ -154,5 +154,5 @@ setTimeout(() => {
     if (isPassed) return;
 
     console.error('Test is not done.');
-}, 60000);
+}, 6000);
 
