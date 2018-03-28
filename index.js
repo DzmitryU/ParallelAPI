@@ -23,30 +23,33 @@ const promisifyJobs = (jobs) => {
 };
 
 const makeJobs = (jobs, parallelJobsNumber) => {
-    const jobChunks = splitArray(jobs, parallelJobsNumber);
+    return new Promise(resolve => {
+        const jobChunks = splitArray(jobs, parallelJobsNumber);
+        let promiseChain = Promise.all([Promise.resolve()]);
 
-    let promiseChain = Promise.all([Promise.resolve()]);
-    const results = [];
+        let index = 0;
 
+        const results = [];
 
-    jobChunks.forEach((chunk) => {
-        const promisifiedJobs = promisifyJobs(chunk);
-        promiseChain = promiseChain.then((promiseResult) => {
+        const updatePromiseChain = (promiseResult) => {
             results.push(...promiseResult);
-            return Promise.all(promisifiedJobs)
-        });
-    });
+            if (index >= jobChunks.length) {
+                results.splice(0, 1);
+                resolve(results);
+            } else {
+                const promisifiedJobs = promisifyJobs(jobChunks[index]);
+                index++;
+                return Promise.all(promisifiedJobs).then(updatePromiseChain);
+            }
+        };
 
-    return promiseChain.then((result) => {
-        results.push(...result);
-        results.splice(0, 1);
-        return results;
+        promiseChain = promiseChain.then(updatePromiseChain);
     });
 };
 
 class Parallel {
 
-    constructor({ parallelJobs }) {
+    constructor({parallelJobs}) {
         this.jobs = [];
         this.parallelJobsNumber = parallelJobs;
     };
@@ -130,6 +133,7 @@ function step4(done) {
 setTimeout(() => result += 'after4/', 5500);
 
 let isPassed = false;
+
 function onDone(results) {
     console.log('onDone', results, result);
 
@@ -147,8 +151,8 @@ function onDone(results) {
 }
 
 setTimeout(() => {
-    if(isPassed) return;
+    if (isPassed) return;
 
     console.error('Test is not done.');
-}, 6000);
+}, 60000);
 
